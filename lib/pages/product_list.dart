@@ -1,8 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+import '../scoped_models/main.dart';
+import './product_edit.dart';
 
-class ProductListPage extends StatelessWidget {
+class ProductListPage extends StatefulWidget {
+  final MainModel model;
+  ProductListPage(this.model);
+
+  @override
+  _ProductListPageState createState() => _ProductListPageState();
+}
+
+class _ProductListPageState extends State<ProductListPage> {
+
+  @override
+  initState(){
+    widget.model.fetchProducts();
+    super.initState();
+  }
+
+  Widget _buildEditButton(BuildContext context, int index, MainModel model) {
+      return IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          model.selectProduct(model.allProducts[index].id);
+          Navigator.of(context).push<dynamic>(
+            MaterialPageRoute<dynamic>(
+              builder: (BuildContext context) {
+                return ProductEditPage();
+              },
+            ),
+          );
+        },
+      );
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Products List'),);
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return Dismissible(
+                key: Key(model.allProducts[index].title),
+                onDismissed: (DismissDirection direction) {
+                  if (direction == DismissDirection.endToStart) {
+                    model.selectProduct(model.allProducts[index].id);
+                    model.deleteProduct();
+                  }
+                  if (direction == DismissDirection.startToEnd) {
+                    model.selectProduct(model.allProducts[index].id);
+                    model.deleteProduct();
+                  }
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text("dismisse item")));
+                },
+                background:  Container(
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 20.0),
+                  color: Colors.red,
+                  child: IconButton(icon:  Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                    onPressed: (){
+                      model.selectProduct(model.allProducts[index].id);
+                      model.deleteProduct();
+                    },),
+
+                ),
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                            NetworkImage(model.allProducts[index].image),
+                      ),
+                      title: Text(model.allProducts[index].title),
+                      subtitle:
+                          Text('\$${model.allProducts[index].price.toString()}'),
+                      trailing: _buildEditButton(context, index, model),
+                    ),
+                    Divider()
+                  ],
+                ));
+          },
+          itemCount: model.allProducts.length,
+        );
+      },
+    );
   }
 }

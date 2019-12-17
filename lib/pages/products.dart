@@ -1,39 +1,78 @@
 import 'package:flutter/material.dart';
-
+import 'package:scoped_model/scoped_model.dart';
 import '../widgets/products/products.dart';
+import '../scoped_models/main.dart';
 
-class ProductsPage extends StatelessWidget {
-  final List<Map<String, dynamic>> products;
+class ProductsPage extends StatefulWidget {
+  final MainModel model;
+  ProductsPage(this.model);
+  @override
+  _ProductsPageState createState() => _ProductsPageState();
+}
 
-  ProductsPage(this.products,);
+class _ProductsPageState extends State<ProductsPage> {
+  @override
+  initState(){
+    widget.model.fetchProducts();
+    super.initState();
+  }
+  Widget _buildSideDrawer(BuildContext context) {
+    return Drawer(
+      child: Column(
+        children: <Widget>[
+          AppBar(
+            automaticallyImplyLeading: false,
+            title: Text('Choose'),
+          ),
+          ListTile(
+            leading: Icon(Icons.edit),
+            title: Text('Manage Products'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/admin');
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductsList() {
+    return ScopedModelDescendant(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        Widget content = Center(child: Text('No Products Found!'));
+        if (model.displayedProducts.length > 0 && !model.isLoading) {
+          content = Products();
+        } else if (model.isLoading) {
+          content = Center(child: CircularProgressIndicator());
+        }
+        return RefreshIndicator(onRefresh: model.fetchProducts,child: content);
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Drawer(
-        child: Column(
-          children: <Widget>[
-            AppBar(
-              automaticallyImplyLeading: false,
-              title: Text('Choose'),
-            ),
-            ListTile(
-              leading: Icon(Icons.edit),
-              title: Text('Manage Products'),
-              onTap: () {
-                Navigator.pushReplacementNamed(context, '/admin');
+    return
+      ScopedModelDescendant<MainModel>(builder: (BuildContext context,Widget child, MainModel model){
+      return Scaffold(
+      drawer: _buildSideDrawer(context),
+      appBar: AppBar(
+        title: Text(model.displayFavouritesOnly ? 'Fovourites Products' :'List Of All Products'),
+        actions: <Widget>[
+             IconButton(
+              icon: Icon(model.displayFavouritesOnly ?
+                Icons.favorite:Icons.favorite_border,
+                size: 30,
+              ),
+              onPressed: () {
+                model.toggleDisplayMode();
               },
             )
-          ],
-        ),
-      ),
-      appBar: AppBar(
-        title: Text('My Second App'),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.favorite,size: 30,),onPressed: (){},)
         ],
       ),
-      body: Products(products),
+      body: _buildProductsList(),
     );
+      },);
   }
 }

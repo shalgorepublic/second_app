@@ -10,10 +10,11 @@ class AddressTag extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 10.0,vertical: 3.0),
       decoration: BoxDecoration(
           border: Border.all(
-            color: Colors.grey,
+            color: Colors.black,
             width: 1.0,
           ),
           borderRadius: BorderRadius.circular(4.0)),
-      child:Text(address),);
+      child:Text(address,style: TextStyle(fontWeight:
+      FontWeight.bold,fontSize: 18),),);
   }
 }

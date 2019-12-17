@@ -1,52 +1,96 @@
 import 'package:flutter/material.dart';
+
+import 'package:scoped_model/scoped_model.dart';
+
 import './price_tag.dart';
-import '../ui_elements/title_default.dart';
 import './address_tag.dart';
+import '../ui_elements/title_default.dart';
+import '../../models/product.dart';
+import '../../scoped_models/main.dart';
+
 class ProductCard extends StatelessWidget {
-  final Map<String, dynamic>products;
+  final Product product;
   final int productIndex;
-  ProductCard(this.products, this.productIndex);
+
+  ProductCard(this.product, this.productIndex);
+
+  Widget _buildTitlePriceRow() {
+    return Container(
+      padding: EdgeInsets.only(top: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          TitleDefault(product.title),
+          SizedBox(
+            width: 8.0,
+          ),
+          PriceTag(product.price.toString())
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return ScopedModelDescendant<MainModel>(
+      builder: (BuildContext context, Widget child, MainModel model) {
+        return ButtonBar(
+            alignment: MainAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.info,size: 40),
+                color: Theme.of(context).accentColor,
+                onPressed: () => Navigator
+                    .pushNamed<bool>(context,
+                    '/product/' + model.allProducts[productIndex].id),
+              ),
+              IconButton(
+                icon: Icon(
+                  model.allProducts[productIndex].isFaviurite
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  size: 40,
+                ),
+                color: Colors.red,
+                onPressed: () {
+                  model.selectProduct(model.allProducts[productIndex].id);
+                  model.toggleProductFavouriteStatus();
+                },
+              ),
+            ]);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Column(
         children: <Widget>[
-          Image.asset(products['image']),
-          Container(
-            padding: EdgeInsets.only(top: 15.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TitleDefault(products['title']),
-                SizedBox(width: 20.0),
-                PriceTag(products['price'].toString()),
-              ],
-            ),
+          FadeInImage(
+            image: NetworkImage(product.image),
+            height: 300.0,
+            fit: BoxFit.cover,
+            placeholder: AssetImage('assets/food.jpg'),
           ),
-
-          SizedBox(height: 10.0,),
-          AddressTag('Union Square'),
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.info,size: 40,),
-                color: Theme.of(context).accentColor,
-                onPressed: () => Navigator.pushNamed<bool>(
-                    context, '/product/' + productIndex.toString()),
-              ),
-              SizedBox(width: 10,),
-              IconButton(
-                icon: Icon(Icons.favorite_border,size: 40,),
-                color: Colors.red,
-                onPressed: () => Navigator.pushNamed<bool>(
-                    context, '/product/' + productIndex.toString()),
-              )
-            ],
-          )
+          _buildTitlePriceRow(),
+          AddressTag('Union Square, San Francisco'),
+          Text(product.userEmail),
+          _buildActionButtons(context)
         ],
       ),
     );
+    ;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
