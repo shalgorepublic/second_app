@@ -7,6 +7,7 @@ class Products extends StatelessWidget  {
 
   Widget _buildProductList(List<Product> products) {
     Widget productCards;
+    print(products[products.length-2].description);
     if (products.length > 0) {
       productCards = ListView.builder(
         itemBuilder: (BuildContext context, int index)=>
@@ -23,7 +24,8 @@ class Products extends StatelessWidget  {
   Widget build(BuildContext context) {
     print('[Products Widget] build()');
     return ScopedModelDescendant<MainModel>(builder: (BuildContext context, Widget child, MainModel model){
-        return _buildProductList(model.displayedProducts);
+        return
+        _buildProductList(model.displayedProducts);
     },);
   }
 }

@@ -45,7 +45,7 @@ class ProductsModel extends ConnectedProductsModel {
       });
     }
 
-    bool get displayFavouritesOnly {
+    bool get displayFavouritesOnly{
       return _showFavourite;
     }
 
@@ -68,6 +68,7 @@ class ProductsModel extends ConnectedProductsModel {
           body: json.encode(productData));
       if (response.statusCode != 200 && response.statusCode != 210) {
         _isLoading = false;
+        print(response);
         notifyListeners();
         return false;
       }
@@ -161,6 +162,7 @@ class ProductsModel extends ConnectedProductsModel {
           .get('https://flutter-projects-1d118.firebaseio.com/projects.json')
           .then<Null>((http.Response response) {
         final List<Product> fetchedProductList = [];
+        print(response.body);
         final Map<String, dynamic> productListData = jsonDecode(response.body);
         if (productListData == null) {
           _isLoading = false;
@@ -218,7 +220,7 @@ class ProductsModel extends ConnectedProductsModel {
 
 class UserModel extends ConnectedProductsModel {
   void login(String email, String password) {
-    _authenthicatedUser = User(id: 'fhdajhd', email: email, password: password);
+    _authenthicatedUser = User(id: 'abhdbab', email: email, password: password);
   }
 }
 
