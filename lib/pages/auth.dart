@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
-import '../scoped_models/main.dart';
 import '../models/auth.dart';
+import '../scoped_models/main.dart';
 
 class AuthPage extends StatefulWidget {
   @override
@@ -14,7 +14,7 @@ class _AuthPageState extends State<AuthPage> {
   final Map<String, dynamic> _formData = {
     'email': null,
     'password': null,
-    'acceptTerms': false
+    'acceptTerms': false,
   };
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordTextController = TextEditingController();
@@ -101,7 +101,7 @@ class _AuthPageState extends State<AuthPage> {
     successInformaton = await authenticate(
         _formData['email'], _formData['password'], _authMode);
     if (successInformaton['success']) {
-      Navigator.pushReplacementNamed(context, '/products');
+      //  Navigator.pushReplacementNamed(context, '/');
     } else {
       showDialog<dynamic>(
         context: context,
@@ -128,7 +128,8 @@ class _AuthPageState extends State<AuthPage> {
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
     final double targetWidth = deviceWidth > 550.0 ? 500.0 : deviceWidth * 0.95;
-    return Scaffold(
+    return SafeArea(
+        child: Scaffold(
       appBar: AppBar(
         title: Text('Login'),
       ),
@@ -183,28 +184,30 @@ class _AuthPageState extends State<AuthPage> {
                               MainModel model) {
                         return model.isLoading
                             ? Dialog(
-                          child: Container(
-                            height: 70,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                new CircularProgressIndicator(),
-                                Container(
-                                  margin: EdgeInsets.only(left: 30),
-                                  child: new Text("Loading"),
-                                )
-                              ],
-                            ),
-                          ),
-                        )
+                                child: Container(
+                                  height: 70,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      new CircularProgressIndicator(),
+                                      Container(
+                                        margin: EdgeInsets.only(left: 30),
+                                        child: new Text("Loading"),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              )
                             : RaisedButton(
-                          textColor: Colors.white,
-                          color: Theme.of(context).accentColor,
-                          child: Text(
-                              _authMode == AuthMode.Login ? 'LOGIN' : 'SIGNUP'),
-                          onPressed: () => _submitForm(model.authenticate),
-                        );
+                                textColor: Colors.white,
+                                color: Theme.of(context).accentColor,
+                                child: Text(_authMode == AuthMode.Login
+                                    ? 'LOGIN'
+                                    : 'SIGNUP'),
+                                onPressed: () =>
+                                    _submitForm(model.authenticate),
+                              );
                       }),
                     ],
                   ),
@@ -214,6 +217,6 @@ class _AuthPageState extends State<AuthPage> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

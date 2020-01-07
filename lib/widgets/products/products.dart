@@ -7,7 +7,6 @@ class Products extends StatelessWidget  {
 
   Widget _buildProductList(List<Product> products) {
     Widget productCards;
-    print(products[products.length-2].description);
     if (products.length > 0) {
       productCards = ListView.builder(
         itemBuilder: (BuildContext context, int index)=>

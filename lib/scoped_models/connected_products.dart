@@ -6,6 +6,7 @@ import '../models/user.dart';
 import 'package:http/http.dart' as http;
 import '../models/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rxdart/subjects.dart';
 
 class ConnectedProductsModel extends Model {
   List<Product> _products = [];
@@ -68,10 +69,10 @@ class ProductsModel extends ConnectedProductsModel {
     try {
       final http.Response response = await http.post(
           'https://flutter-projects-1d118.firebaseio.com/projects.json?auth=${_authenthicatedUser.token}',
-          body: json.encode(productData));
+   1       body: json.encode(productData));
       if (response.statusCode != 200 && response.statusCode != 210) {
         _isLoading = false;
-        print(response);
+      //  print(response);
         notifyListeners();
         return false;
       }
@@ -164,7 +165,7 @@ class ProductsModel extends ConnectedProductsModel {
             'https://flutter-projects-1d118.firebaseio.com/projects.json?auth=${_authenthicatedUser.token}')
         .then<Null>((http.Response response) {
       final List<Product> fetchedProductList = [];
-      print(response.body);
+     // print(response.body);
       final Map<String, dynamic> productListData = jsonDecode(response.body);
       if (productListData == null) {
         _isLoading = false;
@@ -219,8 +220,16 @@ class ProductsModel extends ConnectedProductsModel {
 }
 
 class UserModel extends ConnectedProductsModel {
+
+  Timer _authTimer;
+
+  PublishSubject <bool> _userSubject = PublishSubject();
+
   User get user{
     return _authenthicatedUser;
+  }
+  PublishSubject<bool> get userSubject {
+    return _userSubject;
   }
   Future<Map<String, dynamic>> authenticate(String email, String password,
       [AuthMode mode = AuthMode.Login]) async {
@@ -246,8 +255,6 @@ class UserModel extends ConnectedProductsModel {
       );
     }
 
-    print(json.decode(response.body));
-    print("helo response");
     final Map<String , dynamic> responseData = json.decode(response.body);
     bool hasError = true;
     String message = 'Something went wrong.';
@@ -259,10 +266,19 @@ class UserModel extends ConnectedProductsModel {
           id: responseData['localID'] ,
           email: email ,
           token: responseData['idToken']);
+      setAuthTimeout(int.parse(responseData['expiresIn']));
+      _userSubject.add(true);
+      final DateTime now = DateTime.now();
+      final DateTime expiryTime =
+      now.add(Duration(seconds: int.parse(responseData['expiresIn'])));
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('token' , responseData['idToken']);
       prefs.setString('userEmail' , email);
       prefs.setString('userId' , responseData['localId']);
+      prefs.setString('expiryTime', expiryTime.toIso8601String());
+      print(expiryTime.toIso8601String());
+      print('shhaid');
+      print(_userSubject);
     } else if (responseData['error']['message'] == 'EMAIL_EXISTS') {
       message = 'This Email is already exists.';
     } else if (responseData['error']['message'] == 'EMAIL_NOT_FOUND') {
@@ -277,23 +293,49 @@ class UserModel extends ConnectedProductsModel {
     void autoAuthenticate() async{
       final SharedPreferences prefs =  await SharedPreferences.getInstance();
       final String token = prefs.get('token');
+      final String expiryTimeString = prefs.getString('expiryTime');
       if(token != null){
+        final DateTime now = DateTime.now();
+        final parsedExpiryTime = DateTime.parse(expiryTimeString);
+        if (parsedExpiryTime.isBefore(now)) {
+          _authenthicatedUser = null;
+          notifyListeners();
+          return;
+        }
         final String userEmail = prefs.get('userEmail');
         final String userId = prefs.get('userId');
+        final int tokenLifespan = parsedExpiryTime.difference(now).inSeconds;
         _authenthicatedUser = User(id: userId,email: userEmail,token: token);
+        _userSubject.add(true);
+        setAuthTimeout(tokenLifespan);
         notifyListeners();
-        print(_authenthicatedUser);
       }
   }
   void logout() async {
     print('Logout');
     _authenthicatedUser = null;
+    _authTimer.cancel();
+    _userSubject.add(false);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove('token');
     prefs.remove('userEmail');
     prefs.remove('userId');
   }
+  void setAuthTimeout(int time) {
+    _authTimer = Timer(Duration(hours: time* 5),logout);
+  }
+  void save(List names) async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    print(names);
+    prefs.setString('ListOfNames', jsonEncode(names));
+    notifyListeners();
+    final String namesList = prefs.get('ListOfNames');
+    print("helo Peoples");
+    print(jsonDecode(namesList)[1]);
+  }
 }
+
 
 class UtilityModel extends ConnectedProductsModel {
   bool get isLoading {

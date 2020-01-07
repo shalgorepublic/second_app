@@ -56,7 +56,7 @@ class _ProductListPageState extends State<ProductListPage> {
                     model.deleteProduct();
                   }
                   Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text("dismisse item")));
+                      .showSnackBar(SnackBar(content: Text("dismisse item ${model.allProducts[index].title}")));
                 },
                 background:  Container(
                   alignment: Alignment.centerRight,

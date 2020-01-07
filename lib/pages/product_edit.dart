@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import 'package:scoped_model/scoped_model.dart';
 import '../scoped_models/main.dart';
+//import '../widgets/form_inputs/image.dart';
 
 class ProductEditPage extends StatefulWidget {
   @override
@@ -109,6 +110,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
               SizedBox(
                 height: 10.0,
               ),
+            //  ImageInput(),
+             // SizedBox(height: 10.0),
               _buildSubmitButton(),
               // GestureDetector(
               //   onTap: _submitForm,

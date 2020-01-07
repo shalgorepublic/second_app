@@ -3,6 +3,7 @@ import 'package:scoped_model/scoped_model.dart';
 import '../widgets/products/products.dart';
 import '../scoped_models/main.dart';
 import '../widgets/ui_elements/logout_list_tile.dart';
+import './task_screen.dart';
 class ProductsPage extends StatefulWidget {
   final MainModel model;
   ProductsPage(this.model);
@@ -32,6 +33,15 @@ class _ProductsPageState extends State<ProductsPage> {
             },
           ),
           Divider(),
+          ListTile(
+            leading: Icon(Icons.assignment),
+            title: Text('Task Page'),
+            onTap: () {
+              Navigator.of(context).push<dynamic>(MaterialPageRoute<dynamic>(
+                  builder: (BuildContext context) => TaskScreen()));
+            },
+          ),
+          Divider(),
           LogoutListTile(),
         ],
       ),
@@ -43,7 +53,7 @@ class _ProductsPageState extends State<ProductsPage> {
       builder: (BuildContext context, Widget child, MainModel model) {
         Widget content = Center(child: Text('No Products Found!'));
         if (model.displayedProducts.length > 0 && !model.isLoading) {
-          content = Products();
+          content = SafeArea(child:Products());
         } else if (model.isLoading) {
           content = Center(child: CircularProgressIndicator());
         }
@@ -57,24 +67,25 @@ class _ProductsPageState extends State<ProductsPage> {
   Widget build(BuildContext context) {
     return
       ScopedModelDescendant<MainModel>(builder: (BuildContext context,Widget child, MainModel model){
-      return Scaffold(
-      drawer: _buildSideDrawer(context),
-      appBar: AppBar(
-        title: Text(model.displayFavouritesOnly ? 'Fovourites Products' :'List Of All Products'),
-        actions: <Widget>[
-             IconButton(
+      return  SafeArea(top: false,child: Scaffold(
+        drawer: _buildSideDrawer(context),
+        appBar: AppBar(
+          title: Text(model.displayFavouritesOnly ? 'Fovourites Products' :'List Of All Products'),
+          actions: <Widget>[
+            IconButton(
               icon: Icon(model.displayFavouritesOnly ?
-                Icons.favorite:Icons.favorite_border,
+              Icons.favorite:Icons.favorite_border,
                 size: 30,
               ),
               onPressed: () {
                 model.toggleDisplayMode();
               },
             )
-        ],
-      ),
-      body: _buildProductsList(),
-    );
+          ],
+        ),
+        body: _buildProductsList(),
+      ));
+
       },);
   }
 }
